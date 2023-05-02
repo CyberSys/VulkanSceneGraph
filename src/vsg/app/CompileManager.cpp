@@ -17,6 +17,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <vsg/io/Logger.h>
 #include <vsg/io/Options.h>
 
+#include <chrono>
+
 using namespace vsg;
 
 void CompileResult::reset()
@@ -149,10 +151,40 @@ void CompileManager::add(const Viewer& viewer, const ResourceRequirements& resou
     }
 }
 
+template<size_t N = 10>
+struct Timer
+{
+    Timer()
+    {
+        record();
+    }
+
+    const size_t capacity = N;
+    size_t size = 0;
+    clock::time_point time_points[N];
+    const char* messages[N];
+
+    inline size_t record(const char* m = nullptr) { time_points[size] = clock::now(); messages[size] = m; return size++; }
+
+    inline double delta_ms(size_t i, size_t j) const
+    {
+        return std::chrono::duration<double, std::chrono::milliseconds::period>(time_points[j] - time_points[j]).count();
+    }
+
+    inline double delta_ms(size_t i) const
+    {
+        return std::chrono::duration<double, std::chrono::milliseconds::period>(time_points[i] - time_points[i-1]).count();
+    }
+};
+
 CompileResult CompileManager::compile(ref_ptr<Object> object, ContextSelectionFunction contextSelection)
 {
+    Timer timer;
+
     CollectResourceRequirements collectRequirements;
     object->accept(collectRequirements);
+
+    timer.record("object->accept(collectRequirements)");
 
     auto& requirements = collectRequirements.requirements;
     auto& binStack = requirements.binStack;
@@ -165,6 +197,8 @@ CompileResult CompileManager::compile(ref_ptr<Object> object, ContextSelectionFu
     result.lateDynamicData = requirements.lateDynamicData;
 
     auto compileTraversal = compileTraversals->take_when_available();
+
+    timer.record("compileTraversal = compileTraversals->take_when_available()");
 
     // if no CompileTraversals are available abort compile
     if (!compileTraversal) return result;
@@ -186,12 +220,21 @@ CompileResult CompileManager::compile(ref_ptr<Object> object, ContextSelectionFu
                 context->reserve(requirements);
             }
 
+            timer.record("context->reserve(requirements);");
+
             object->accept(*compileTraversal);
+
+            timer.record("object->accept(*compileTraversal)");
 
             //debug("Finished compile traversal ", object);
 
             compileTraversal->record(); // records and submits to queue
+
+            timer.record("compileTraversal->record()");
+
             compileTraversal->waitForCompletion();
+
+            timer.record("compileTraversal->waitForCompletion()");
         }
         catch (const vsg::Exception& ve)
         {
@@ -233,6 +276,15 @@ CompileResult CompileManager::compile(ref_ptr<Object> object, ContextSelectionFu
     }
 
     compileTraversals->add(compileTraversal);
+
+    timer.record("after compileTraversals->add(compileTraversal);");
+
+    vsg::info("CompileManager::compile()");
+    for(size_t i = 1; i < timer.size; ++i)
+    {
+        if (timer.messages[i]) vsg::info("   ", timer.messages[i], " ", timer.delta_ms(i));
+        else vsg::info("   delta_ms(",i,") ", timer.delta_ms(i));
+    }
 
     return result;
 }
