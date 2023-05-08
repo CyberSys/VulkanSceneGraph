@@ -115,6 +115,9 @@ namespace vsg
 
         mutable std::mutex mutex;
 
+        double allocationTime = 0.0;
+        double deallocationTime = 0.0;
+
     protected:
         // if you are assigning a custom allocator you must retain the old allocator to manage the memory it allocated and needs to delete
         std::unique_ptr<Allocator> nestedAllocator;
