@@ -100,6 +100,7 @@ namespace vsg
 
             void* allocate(std::size_t size);
             bool deallocate(void* ptr, std::size_t size);
+
             size_t deleteEmptyMemoryBlocks();
             size_t totalAvailableSize() const;
             size_t totalReservedSize() const;
