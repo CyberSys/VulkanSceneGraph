@@ -93,7 +93,8 @@ namespace vsg
             Allocator* parent = nullptr;
             std::string name;
             size_t blockSize = 0;
-            std::list<std::unique_ptr<MemoryBlock>> memoryBlocks;
+            std::map<void*, std::unique_ptr<MemoryBlock>> memoryBlocks;
+            MemoryBlock* latestMemoryBlock = nullptr;
 
             MemoryBlocks(Allocator* in_parent, const std::string& in_name, size_t in_blockSize);
             virtual ~MemoryBlocks();
@@ -139,7 +140,7 @@ namespace vsg
 
         allocator_affinity_nodes() = default;
         template<class U>
-        constexpr allocator_affinity_nodes(const allocator_affinity_nodes<U>&) noexcept {}
+        explicit constexpr allocator_affinity_nodes(const allocator_affinity_nodes<U>&) noexcept {}
 
         value_type* allocate(std::size_t n)
         {
