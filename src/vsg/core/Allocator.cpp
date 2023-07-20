@@ -14,10 +14,28 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <vsg/core/Exception.h>
 #include <vsg/io/Logger.h>
 #include <vsg/io/Options.h>
+#include <vsg/ui/UIEvent.h>
 
 #include <algorithm>
+#include <iostream>
+#include <chrono>
 
 using namespace vsg;
+
+struct scoped_timer
+{
+    double& duration;
+    vsg::time_point start;
+
+    inline scoped_timer(double& in_duration) :
+        duration(in_duration),
+        start(vsg::clock::now()) {}
+
+    inline ~scoped_timer()
+    {
+        duration += std::chrono::duration<double, std::chrono::seconds::period>(vsg::clock::now() - start).count();
+    }
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -44,7 +62,18 @@ Allocator::~Allocator()
 {
     if (memoryTracking & MEMORY_TRACKING_REPORT_ACTIONS)
     {
-        info("~Allocator() ", this);
+        std::cout<<"~Allocator() "<<this<<std::endl;
+    }
+
+    if (allocationTime > 1.0)
+    {
+        std::cout<<"allocating time: "<<allocationTime<<" seconds"<<std::endl;
+        std::cout<<"deallocation time: "<<deallocationTime<<" seconds"<<std::endl;
+    }
+    else
+    {
+        std::cout<<"allocating time: "<<allocationTime*1000.0<<" ms"<<std::endl;
+        std::cout<<"deallocation time: "<<deallocationTime*1000.0<<" ms"<<std::endl;
     }
 }
 
@@ -92,6 +121,8 @@ void Allocator::report(std::ostream& out) const
 
 void* Allocator::allocate(std::size_t size, AllocatorAffinity allocatorAffinity)
 {
+    scoped_timer elapsedTime(allocationTime);
+
     std::scoped_lock<std::mutex> lock(mutex);
 
     if (allocatorType == ALLOCATOR_TYPE_NEW_DELETE)
@@ -142,6 +173,8 @@ void* Allocator::allocate(std::size_t size, AllocatorAffinity allocatorAffinity)
 
 bool Allocator::deallocate(void* ptr, std::size_t size)
 {
+    scoped_timer elapsedTime(deallocationTime);
+
     std::scoped_lock<std::mutex> lock(mutex);
 
     for (auto& memoryBlocks : allocatorMemoryBlocks)
