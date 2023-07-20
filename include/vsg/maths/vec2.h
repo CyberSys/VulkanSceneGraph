@@ -26,6 +26,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <vsg/core/type_name.h>
 
 #include <cmath>
+#include <type_traits>
 
 namespace vsg
 {
@@ -134,8 +135,8 @@ namespace vsg
         explicit operator bool() const noexcept { return value[0] != 0.0 || value[1] != 0.0; }
     };
 
-    using vec2 = t_vec2<float>;           // float 2D vector
-    using dvec2 = t_vec2<double>;         // double 2D vector
+    using vec2 = t_vec2<float>;      // float 2D vector
+    using dvec2 = t_vec2<double>;    // double 2D vector
     using bvec2 = t_vec2<int8_t>;    // signed 8 bit integer 2D vector
     using svec2 = t_vec2<int16_t>;   //  signed 16 bit integer 2D vector
     using ivec2 = t_vec2<int32_t>;   //  signed 32 bit integer 2D vector
