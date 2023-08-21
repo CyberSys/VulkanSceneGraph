@@ -164,7 +164,12 @@ struct Timer
     clock::time_point time_points[N];
     const char* messages[N];
 
-    inline size_t record(const char* m = nullptr) { time_points[size] = clock::now(); messages[size] = m; return size++; }
+    inline size_t record(const char* m = nullptr)
+    {
+        time_points[size] = clock::now();
+        messages[size] = m;
+        return size++;
+    }
 
     inline double delta_ms(size_t i, size_t j) const
     {
@@ -173,7 +178,7 @@ struct Timer
 
     inline double delta_ms(size_t i) const
     {
-        return std::chrono::duration<double, std::chrono::milliseconds::period>(time_points[i] - time_points[i-1]).count();
+        return std::chrono::duration<double, std::chrono::milliseconds::period>(time_points[i] - time_points[i - 1]).count();
     }
 };
 
@@ -280,10 +285,12 @@ CompileResult CompileManager::compile(ref_ptr<Object> object, ContextSelectionFu
     timer.record("after compileTraversals->add(compileTraversal);");
 
     vsg::info("CompileManager::compile()");
-    for(size_t i = 1; i < timer.size; ++i)
+    for (size_t i = 1; i < timer.size; ++i)
     {
-        if (timer.messages[i]) vsg::info("   ", timer.messages[i], " ", timer.delta_ms(i));
-        else vsg::info("   delta_ms(",i,") ", timer.delta_ms(i));
+        if (timer.messages[i])
+            vsg::info("   ", timer.messages[i], " ", timer.delta_ms(i));
+        else
+            vsg::info("   delta_ms(", i, ") ", timer.delta_ms(i));
     }
 
     return result;

@@ -17,8 +17,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <vsg/ui/UIEvent.h>
 
 #include <algorithm>
-#include <iostream>
 #include <chrono>
+#include <iostream>
 
 using namespace vsg;
 
@@ -62,18 +62,18 @@ Allocator::~Allocator()
 {
     if (memoryTracking & MEMORY_TRACKING_REPORT_ACTIONS)
     {
-        std::cout<<"~Allocator() "<<this<<std::endl;
+        std::cout << "~Allocator() " << this << std::endl;
     }
 
     if (allocationTime > 1.0)
     {
-        std::cout<<"allocating time: "<<allocationTime<<" seconds"<<std::endl;
-        std::cout<<"deallocation time: "<<deallocationTime<<" seconds"<<std::endl;
+        std::cout << "allocating time: " << allocationTime << " seconds" << std::endl;
+        std::cout << "deallocation time: " << deallocationTime << " seconds" << std::endl;
     }
     else
     {
-        std::cout<<"allocating time: "<<allocationTime*1000.0<<" ms"<<std::endl;
-        std::cout<<"deallocation time: "<<deallocationTime*1000.0<<" ms"<<std::endl;
+        std::cout << "allocating time: " << allocationTime * 1000.0 << " ms" << std::endl;
+        std::cout << "deallocation time: " << deallocationTime * 1000.0 << " ms" << std::endl;
     }
 }
 
